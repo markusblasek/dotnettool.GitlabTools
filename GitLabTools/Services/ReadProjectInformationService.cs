@@ -34,7 +34,7 @@ public class ReadProjectInformationService(
         logger.LogTrace("Found project with id '{projectId}' (name: '{projectName}', url to repo: '{projectHttpUrlToRepo}')",
             project.Id, project.Name, project.HttpUrlToRepo);
         var projectAsJson = JsonSerializer.Serialize(project, DefaultJsonSerializerOptions);
-        logger.LogInformation("{projectAsJson}", projectAsJson);
+        Console.WriteLine(projectAsJson);
         return ExitCodeTypes.Ok;
     }
 }
