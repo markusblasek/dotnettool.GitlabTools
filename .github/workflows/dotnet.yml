@@ -1,0 +1,33 @@
+name: .NET 8.0
+
+on:
+  pull_request:
+  push:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Setup .NET 8
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: 8.0.x
+    - name: .NET info
+      run: dotnet --info
+    - name: Restore
+      run: dotnet restore
+    - name: Build
+      run: dotnet build --no-restore -c Release
+    - name: Package
+      run: dotnet pack --no-build -c Release
+    - name: 'Upload Artifact'
+      uses: actions/upload-artifact@v3
+      with:
+        name: GitLabToolsNugetPackages
+        path: GitLabTools/nupkg/*.nupkg
+        retention-days: 1
+        if-no-files-found: error
