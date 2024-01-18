@@ -37,6 +37,10 @@ public class DeleteBuildPipelineArgument : IGitlabCiInformationArgument, IValida
         {
             throw new ArgumentValidationException($"{nameof(AccessToken)} is not set");
         }
+        if (PipelinesToKeep < 0)
+        {
+            throw new ArgumentValidationException($"{nameof(PipelinesToKeep)} is less than 0");
+        }
     }
     
     // ReSharper disable once StringLiteralTypo

@@ -18,4 +18,10 @@ public class Pipeline
 
     [JsonPropertyName("http_url_to_repo")]
     public string? HttpUrlToRepo { get; set; }
+
+    [JsonPropertyName("created_at")]
+    public DateTime CreatedAt { get; set; }
+
+    [JsonPropertyName("updated_at")]
+    public DateTime? UpdateAt { get; set; }
 }
