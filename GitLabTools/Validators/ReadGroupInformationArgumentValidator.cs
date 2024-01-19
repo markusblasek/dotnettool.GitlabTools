@@ -8,9 +8,13 @@ public static class ReadGroupInformationArgumentValidator
     public static void Validate(ReadGroupInformationArgument args)
     {
         GitLabInformationArgumentValidator.Validate(args);
+
+        var argumentNameGroupId =
+            ExpressionUtils.GetCommandlineArgumentLongName(() => args.GroupId);
+        
         if (args.GroupId < ValidationConstants.GroupIdMinValue)
         {
-            throw new ArgumentValidationException($"{nameof(args.GroupId)} is not a valid project id");
+            throw new ArgumentValidationException($"{argumentNameGroupId} is not a valid project id");
         }
     }
 }

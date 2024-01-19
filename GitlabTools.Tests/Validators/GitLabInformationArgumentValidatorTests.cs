@@ -35,7 +35,7 @@ public class GitLabInformationArgumentValidatorTests
         Assert.ThrowsException<ArgumentValidationException>(() => GitLabInformationArgumentValidator.Validate(input));
     }
 
-    private static IGitLabInformationArgument CreateValidArguments()
+    private static UtGitLabInformationArgument CreateValidArguments()
     {
         return new UtGitLabInformationArgument
         {

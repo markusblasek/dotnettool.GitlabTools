@@ -8,13 +8,18 @@ public static class GitLabInformationArgumentValidator
     /// <exception cref="ArgumentValidationException"></exception>
     public static void Validate(IGitLabInformationArgument args)
     {
+        var argumentNameGitLabUrl =
+            ExpressionUtils.GetCommandlineArgumentLongName(() => args.GitLabUrl);
+        var argumentNameAccessToken =
+            ExpressionUtils.GetCommandlineArgumentLongName(() => args.AccessToken);
+
         if (!Url.IsValid(args.GitLabUrl))
         {
-            throw new ArgumentValidationException($"{nameof(args.GitLabUrl)} is not a valid url");
+            throw new ArgumentValidationException($"{argumentNameGitLabUrl} is not a valid url");
         }
         if (string.IsNullOrWhiteSpace(args.AccessToken))
         {
-            throw new ArgumentValidationException($"{nameof(args.AccessToken)} is not set");
+            throw new ArgumentValidationException($"{argumentNameAccessToken} is not set");
         }
     }
 }

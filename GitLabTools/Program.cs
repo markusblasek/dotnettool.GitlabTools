@@ -6,7 +6,6 @@ using Flurl.Http.Configuration;
 using GitLabTools.Commandline;
 using GitLabTools.GitLab;
 using GitLabTools.Services;
-using GitLabTools.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -99,21 +98,18 @@ public static class Program
 
     private static Task<ExitCodeTypes> DeleteBuildPipelineAsync(IServiceProvider serviceProvider, DeleteBuildPipelineArgument args)
     {
-        DeleteBuildPipelineArgumentValidator.Validate(args);
         var deleteOldPipelinesService = serviceProvider.GetRequiredService<DeleteOldPipelinesService>();
         return deleteOldPipelinesService.DeleteBuildPipelineAsync(args);
     }
 
     private static Task<ExitCodeTypes> ReadProjectInformationAsync(IServiceProvider serviceProvider, ReadProjectInformationArgument args)
     {
-        ReadProjectInformationArgumentValidator.Validate(args);
         var readProjectInformationService = serviceProvider.GetRequiredService<ReadProjectInformationService>();
         return readProjectInformationService.ReadProjectInformationAsync(args);
     }
 
     private static Task<ExitCodeTypes> ReadGroupInformationAsync(IServiceProvider serviceProvider, ReadGroupInformationArgument args)
     {
-        ReadGroupInformationArgumentValidator.Validate(args);
         var readGroupInformationService = serviceProvider.GetRequiredService<ReadGroupInformationService>();
         return readGroupInformationService.ReadGroupInformationAsync(args);
     }

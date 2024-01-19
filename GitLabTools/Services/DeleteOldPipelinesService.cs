@@ -1,23 +1,26 @@
 ﻿using GitLabTools.Commandline;
 using GitLabTools.GitLab;
 using GitLabTools.GitLab.Models;
+using GitLabTools.Validators;
 using Microsoft.Extensions.Logging;
 
 namespace GitLabTools.Services;
 
 public class DeleteOldPipelinesService(
-    ILogger<DeleteOldPipelinesService> logger,
-    IGitlabRestApiClient gitlabRestApiClient)
+    IGitlabRestApiClient gitlabRestApiClient,
+    ILogger<DeleteOldPipelinesService> logger)
 {
     /// <summary>
     /// Delete build pipelines
     /// </summary>
     /// <param name="args"></param>
     /// <param name="cancellationToken"></param>
-    /// <exception cref="GitlabCiFailedException">will be thrown if an error occured</exception>
+    /// <exception cref="GitLabFailedException">will be thrown if an error occured</exception>
+    /// <exception cref="ArgumentValidationException">will be thrown if the arguments are invalid</exception>
     /// <returns></returns>
     public async Task<ExitCodeTypes> DeleteBuildPipelineAsync(DeleteBuildPipelineArgument args, CancellationToken cancellationToken = default)
     {
+        DeleteBuildPipelineArgumentValidator.Validate(args);
         if (args.DryRun)
         {
             logger.LogInformation("Dry run enabled - no changes will be made");

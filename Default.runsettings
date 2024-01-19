@@ -22,6 +22,7 @@
 							</Include>
 							<Exclude>
 								<ModulePath>.*Tests.dll$</ModulePath>
+								<ModulePath>.*moq.dll$</ModulePath>
 							</Exclude>
 						</ModulePaths>
 

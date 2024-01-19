@@ -3,13 +3,14 @@ using System.Text.Json;
 using System.Text.Unicode;
 using GitLabTools.Commandline;
 using GitLabTools.GitLab;
+using GitLabTools.Validators;
 using Microsoft.Extensions.Logging;
 
 namespace GitLabTools.Services;
 
 public class ReadProjectInformationService(
-    ILogger<ReadProjectInformationService> logger,
-    IGitlabRestApiClient gitlabRestApiClient)
+    IGitlabRestApiClient gitlabRestApiClient,
+    ILogger<ReadProjectInformationService> logger)
 {
     private static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
@@ -22,10 +23,12 @@ public class ReadProjectInformationService(
     /// </summary>
     /// <param name="args"></param>
     /// <param name="cancellationToken"></param>
-    /// <exception cref="GitlabCiFailedException">will be thrown if an error occured</exception>
+    /// <exception cref="GitLabFailedException">will be thrown if an error occured</exception>
+    /// <exception cref="ArgumentValidationException">will be thrown if the arguments are invalid</exception>
     /// <returns></returns>
     public async Task<ExitCodeTypes> ReadProjectInformationAsync(ReadProjectInformationArgument args, CancellationToken cancellationToken = default)
     {
+        ReadProjectInformationArgumentValidator.Validate(args);
         var project = await gitlabRestApiClient.ReadProjectAsync(args.GitLabUrl, args.AccessToken, args.ProjectId, cancellationToken);
         if (project == null)
         {

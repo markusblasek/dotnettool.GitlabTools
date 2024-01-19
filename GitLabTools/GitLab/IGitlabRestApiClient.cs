@@ -12,7 +12,7 @@ public interface IGitlabRestApiClient
     /// <param name="projectId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>the project or null</returns>
-    /// <exception cref="GitlabCiFailedException"></exception>
+    /// <exception cref="GitLabFailedException"></exception>
     public Task<Project?> ReadProjectAsync(string gitlabUrl, string accessToken, int projectId,
         CancellationToken cancellationToken = default);
 
@@ -24,15 +24,15 @@ public interface IGitlabRestApiClient
     /// <param name="groupId"></param>
     /// <param name="cancellationToken"></param>
     /// <returns>the group or null</returns>
-    /// <exception cref="GitlabCiFailedException"></exception>
+    /// <exception cref="GitLabFailedException"></exception>
     public Task<Group?> ReadGroupAsync(string gitlabUrl, string accessToken, int groupId,
         CancellationToken cancellationToken = default);
 
-    /// <exception cref="GitlabCiFailedException"></exception>
+    /// <exception cref="GitLabFailedException"></exception>
     public Task<Pipeline[]> ReadAllPipelinesAsync(string gitlabUrl, string accessToken, Project project,
-        CancellationToken cancellationToken);
+        CancellationToken cancellationToken = default);
 
-    /// <exception cref="GitlabCiFailedException"></exception>
+    /// <exception cref="GitLabFailedException"></exception>
     public Task DeletePipelinesAsync(string gitlabUrl, string accessToken, Project project,
-        Pipeline[] pipelinesToDelete, CancellationToken cancellationToken);
+        Pipeline[] pipelinesToDelete, CancellationToken cancellationToken = default);
 }

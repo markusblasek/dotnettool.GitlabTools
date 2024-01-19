@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using Flurl;
 using Flurl.Http;
 using Flurl.Http.Configuration;
@@ -11,17 +12,24 @@ namespace GitLabTools.GitLab;
 public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<GitLabRestApiClient> logger)
     : IGitlabRestApiClient
 {
+    public const string HeaderNamePrivateToken = "PRIVATE-TOKEN";
+    public const string QueryParamNamePage = "page";
+    public const string QueryParamNamePerPage = "per_page";
+    public const string QueryParamNameOrderBy = "order_by";
+    public const string QueryParamNameSort = "sort";
+    private const int MaxResultsPerPage = 100;
+
     private readonly IFlurlClient _client = flurlClientCache.Get(FlurClientNameConstants.GitLabClient);
 
     private readonly IAsyncPolicy _asyncPolicyForExecuteHttpRequestsToGitlabCi =
         PollyUtils.GetAsyncRetryPolicyForExecuteHttpRequests();
 
     /// <inheritdoc />
-    public Task<Project?> ReadProjectAsync(
+    public async Task<Project?> ReadProjectAsync(
         string gitlabUrl, string accessToken, int projectId, CancellationToken cancellationToken = default)
     {
         var client = AddCredentialsToClient(gitlabUrl, accessToken);
-        return ReadProjectFromGitlabAsync(client, projectId, cancellationToken);
+        return await ReadProjectFromGitlabAsync(client, projectId, cancellationToken);
     }
 
     private async Task<Project?> ReadProjectFromGitlabAsync(
@@ -30,10 +38,10 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
         try
         {
             var url = client.BaseUrl.AppendPathSegments("api", "v4", "projects", projectId);
-            return await ExecuteRequestWithJsonResponseBodyAsync<Project, GitlabCiFailedException>(
+            return await ExecuteRequestWithJsonResponseBodyAsync<Project, GitLabFailedException>(
                 _asyncPolicyForExecuteHttpRequestsToGitlabCi, client, HttpMethod.Get, url, null, cancellationToken);
         }
-        catch (GitlabCiFailedException gfe)
+        catch (GitLabFailedException gfe)
         {
             if (gfe.InnerException is FlurlHttpException { StatusCode: (int)HttpStatusCode.NotFound })
             {
@@ -44,11 +52,11 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     }
 
     /// <inheritdoc />
-    public Task<Group?> ReadGroupAsync(string gitlabUrl, string accessToken, int groupId,
+    public async Task<Group?> ReadGroupAsync(string gitlabUrl, string accessToken, int groupId,
         CancellationToken cancellationToken = default)
     {
         var client = AddCredentialsToClient(gitlabUrl, accessToken);
-        return ReadGroupFromGitlabAsync(client, groupId, cancellationToken);
+        return await ReadGroupFromGitlabAsync(client, groupId, cancellationToken);
     }
 
     private async Task<Group?> ReadGroupFromGitlabAsync(
@@ -57,10 +65,10 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
         try
         {
             var url = client.BaseUrl.AppendPathSegments("api", "v4", "groups", groupId);
-            return await ExecuteRequestWithJsonResponseBodyAsync<Group, GitlabCiFailedException>(
+            return await ExecuteRequestWithJsonResponseBodyAsync<Group, GitLabFailedException>(
                 _asyncPolicyForExecuteHttpRequestsToGitlabCi, client, HttpMethod.Get, url, null, cancellationToken);
         }
-        catch (GitlabCiFailedException gfe)
+        catch (GitLabFailedException gfe)
         {
             if (gfe.InnerException is FlurlHttpException { StatusCode: (int)HttpStatusCode.NotFound })
             {
@@ -71,11 +79,11 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     }
 
     /// <inheritdoc />
-    public Task<Pipeline[]> ReadAllPipelinesAsync(
-        string gitlabUrl, string accessToken, Project project, CancellationToken cancellationToken)
+    public async Task<Pipeline[]> ReadAllPipelinesAsync(
+        string gitlabUrl, string accessToken, Project project, CancellationToken cancellationToken = default)
     {
         var client = AddCredentialsToClient(gitlabUrl, accessToken);
-        return ReadAllPipelinesFromGitlabAsync(client, project, cancellationToken);
+        return await ReadAllPipelinesFromGitlabAsync(client, project, cancellationToken);
     }
 
     private async Task<Pipeline[]> ReadAllPipelinesFromGitlabAsync(
@@ -95,21 +103,22 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     private async Task<Pipeline[]> ReadPipelinesFromGitlabAsync(
         IFlurlClient client, Project project, int pageNum, CancellationToken cancellationToken)
     {
+        var jsonPropertyNameId = ExpressionUtils.GetJsonPropertyName(() => new Group().Id);
         var url = client.BaseUrl
             .AppendPathSegments("api", "v4", "projects", project.Id, "pipelines")
-            .SetQueryParam("page", pageNum)
-            .SetQueryParam("per_page", "100")
-            .SetQueryParam("order_by", "id")
-            .SetQueryParam("sort", "desc");
-        return await ExecuteRequestWithJsonResponseBodyAsync<Pipeline[], GitlabCiFailedException>(
+            .SetQueryParam(QueryParamNamePage, pageNum)
+            .SetQueryParam(QueryParamNamePerPage, MaxResultsPerPage)
+            .SetQueryParam(QueryParamNameOrderBy, jsonPropertyNameId)
+            .SetQueryParam(QueryParamNameSort, "desc");
+        return await ExecuteRequestWithJsonResponseBodyAsync<Pipeline[], GitLabFailedException>(
             _asyncPolicyForExecuteHttpRequestsToGitlabCi, client, HttpMethod.Get, url, null, cancellationToken);
     }
 
     /// <inheritdoc />
-    public Task DeletePipelinesAsync(string gitlabUrl, string accessToken, Project project, Pipeline[] pipelinesToDelete, CancellationToken cancellationToken)
+    public async Task DeletePipelinesAsync(string gitlabUrl, string accessToken, Project project, Pipeline[] pipelinesToDelete, CancellationToken cancellationToken = default)
     {
         var client = AddCredentialsToClient(gitlabUrl, accessToken);
-        return DeletePipelinesFromGitlabAsync(client, project, pipelinesToDelete, cancellationToken);
+        await DeletePipelinesFromGitlabAsync(client, project, pipelinesToDelete, cancellationToken);
     }
 
     private async Task DeletePipelinesFromGitlabAsync(IFlurlClient client, Project project, IEnumerable<Pipeline> pipelinesToDelete, CancellationToken cancellationToken)
@@ -119,7 +128,7 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
             logger.LogTrace("Deleting old pipeline {pipelineId} from project id '{projectId}' ('{projectName}')",
                 pipelineId, project.Id, project.Name);
             var url = client.BaseUrl.AppendPathSegments("api", "v4", "projects", project.Id, "pipelines", pipelineId);
-            await ExecuteRequestWithNoResponseBodyAsync<GitlabCiFailedException>(
+            await ExecuteRequestWithNoResponseBodyAsync<GitLabFailedException>(
                 _asyncPolicyForExecuteHttpRequestsToGitlabCi, client, HttpMethod.Delete, url, null, cancellationToken);
             logger.LogTrace("Old pipeline with id '{pipelineId}' from project id '{projectId}' ('{projectName}') deleted successfully",
                 pipelineId, project.Id, project.Name);
@@ -129,7 +138,7 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     private IFlurlClient AddCredentialsToClient(string gitlabUrl, string accessToken)
     {
         _client.BaseUrl = gitlabUrl;
-        _client.Headers.AddOrReplace("PRIVATE-TOKEN", accessToken);
+        _client.Headers.AddOrReplace(HeaderNamePrivateToken, accessToken);
         return _client;
     }
 
@@ -193,6 +202,7 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
         return CreateException<T>(message, ex);
     }
 
+    [ExcludeFromCodeCoverage]
     private static T CreateException<T>(string message, Exception ex) where T : Exception
     {
         var type = typeof(T);
