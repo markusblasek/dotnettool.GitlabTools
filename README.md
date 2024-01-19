@@ -15,8 +15,10 @@ The MIT License. See the [license](https://github.com/markusblasek/dotnettool.gi
 ## Usage
 ```bash
 dotnet gitlabtools readProject --gitLabUrl https://gitlab.test.com --projectId 123456 --accessToken #PersonalAccessToken#
+dotnet gitlabtools readGroup --gitLabUrl https://gitlab.test.com --groupId 654321 --accessToken #PersonalAccessToken#
 dotnet gitlabtools deletePipelines --gitLabUrl https://gitlab.test.com --pipelinesToKeep 80 --projectId 123456  --accessToken #PersonalAccessToken#
 dotnet gitlabtools deletePipelines --gitLabUrl https://gitlab.test.com --pipelinesToKeep 80 --projectId 123456  --accessToken #PersonalAccessToken# --dryRun
+dotnet gitlabtools deletePipelines --gitLabUrl https://gitlab.test.com --pipelinesToKeep 80 --groupId 654321  --accessToken #PersonalAccessToken#
 ```
 
 ## Possible exit codes
