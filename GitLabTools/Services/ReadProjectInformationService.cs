@@ -6,6 +6,7 @@ using GitLabTools.GitLab;
 using Microsoft.Extensions.Logging;
 
 namespace GitLabTools.Services;
+
 public class ReadProjectInformationService(
     ILogger<ReadProjectInformationService> logger,
     IGitlabRestApiClient gitlabRestApiClient)

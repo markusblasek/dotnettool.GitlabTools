@@ -5,11 +5,11 @@ using CommandLine.Text;
 namespace GitLabTools.Commandline;
 
 [ExcludeFromCodeCoverage]
-[Verb("readProject", false, ["rp"], HelpText = "Read project information")]
-public class ReadProjectInformationArgument : IGitLabInformationArgument
+[Verb("readGroup", false, ["rg"], HelpText = "Read group information")]
+public class ReadGroupInformationArgument : IGitLabInformationArgument
 {
-    [Option('p', "projectId", Required = true, HelpText = "Project ID to read information from")]
-    public int ProjectId { get; set; }
+    [Option('g', "groupId", Required = true, HelpText = "Group ID to read information from")]
+    public int GroupId { get; set; }
 
     /// <inheritdoc />
     public string GitLabUrl { get; set; } = string.Empty;
@@ -23,10 +23,10 @@ public class ReadProjectInformationArgument : IGitLabInformationArgument
     public static IEnumerable<Example> Examples =>
         new List<Example>
         {
-            new("Read project information",
-                new ReadProjectInformationArgument
+            new("Read group information",
+                new ReadGroupInformationArgument
                 {
-                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com", ProjectId = 123456
+                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com", GroupId = 123456
                 })
         };
 }

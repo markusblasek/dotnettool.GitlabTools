@@ -44,6 +44,33 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     }
 
     /// <inheritdoc />
+    public Task<Group?> ReadGroupAsync(string gitlabUrl, string accessToken, int groupId,
+        CancellationToken cancellationToken = default)
+    {
+        var client = AddCredentialsToClient(gitlabUrl, accessToken);
+        return ReadGroupFromGitlabAsync(client, groupId, cancellationToken);
+    }
+
+    private async Task<Group?> ReadGroupFromGitlabAsync(
+        IFlurlClient client, int groupId, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var url = client.BaseUrl.AppendPathSegments("api", "v4", "groups", groupId);
+            return await ExecuteRequestWithJsonResponseBodyAsync<Group, GitlabCiFailedException>(
+                _asyncPolicyForExecuteHttpRequestsToGitlabCi, client, HttpMethod.Get, url, null, cancellationToken);
+        }
+        catch (GitlabCiFailedException gfe)
+        {
+            if (gfe.InnerException is FlurlHttpException { StatusCode: (int)HttpStatusCode.NotFound })
+            {
+                return null;
+            }
+            throw;
+        }
+    }
+
+    /// <inheritdoc />
     public Task<Pipeline[]> ReadAllPipelinesAsync(
         string gitlabUrl, string accessToken, Project project, CancellationToken cancellationToken)
     {

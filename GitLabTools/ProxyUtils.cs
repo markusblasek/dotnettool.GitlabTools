@@ -2,6 +2,7 @@
 using Flurl;
 
 namespace GitLabTools;
+
 [ExcludeFromCodeCoverage]
 public static class ProxyUtils
 {
@@ -29,7 +30,7 @@ public static class ProxyUtils
                 .ToArray();
         }
 
-        return Array.Empty<string>();
+        return [];
     }
 
     private static bool IsValidUrl(string? urlToValidate)

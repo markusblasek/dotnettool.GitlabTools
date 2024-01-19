@@ -1,14 +1,18 @@
-﻿using CommandLine;
+﻿using System.Diagnostics.CodeAnalysis;
+using CommandLine;
 using CommandLine.Text;
-using Flurl;
 
 namespace GitLabTools.Commandline;
 
+[ExcludeFromCodeCoverage]
 [Verb("deletePipelines", false, ["dp"], HelpText = "Delete pipelines")]
-public class DeleteBuildPipelineArgument : IGitlabCiInformationArgument, IValidatableCommandlineArgument
+public class DeleteBuildPipelineArgument : IGitLabInformationArgument
 {
-    [Option('p', "projectId", Required = true, HelpText = "Project ID to delete pipelines from")]
-    public int ProjectId { get; set; }
+    [Option('p', "projectId", HelpText = "Project ID to delete pipelines from")]
+    public int? ProjectId { get; set; }
+
+    [Option('g', "groupId", HelpText = "Group ID to delete pipelines from")]
+    public int? GroupId { get; set; }
 
     [Option('k', "pipelinesToKeep", HelpText = "Number of pipelines to keep", Default = 50)]
     public int PipelinesToKeep { get; set; }
@@ -21,27 +25,6 @@ public class DeleteBuildPipelineArgument : IGitlabCiInformationArgument, IValida
 
     /// <inheritdoc />
     public string AccessToken { get; set; } = string.Empty;
-
-    /// <inheritdoc />
-    public void Validate()
-    {
-        if (ProjectId <= 0)
-        {
-            throw new ArgumentValidationException($"{nameof(ProjectId)} is not a valid project id");
-        }
-        if (!Url.IsValid(GitLabUrl))
-        {
-            throw new ArgumentValidationException($"{nameof(GitLabUrl)} is not a valid url");
-        }
-        if (string.IsNullOrWhiteSpace(AccessToken))
-        {
-            throw new ArgumentValidationException($"{nameof(AccessToken)} is not set");
-        }
-        if (PipelinesToKeep < 0)
-        {
-            throw new ArgumentValidationException($"{nameof(PipelinesToKeep)} is less than 0");
-        }
-    }
     
     // ReSharper disable once StringLiteralTypo
     [Usage(ApplicationAlias = "dotnet gitlabtools")]
@@ -49,17 +32,23 @@ public class DeleteBuildPipelineArgument : IGitlabCiInformationArgument, IValida
     public static IEnumerable<Example> Examples =>
         new List<Example>
         {
-            new("Delete old pipelines project", 
+            new("Delete old pipelines in a project", 
                 new DeleteBuildPipelineArgument
                 {
                     AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com", 
                     PipelinesToKeep = 80, ProjectId = 123456
                 }),
-            new("Delete old pipelines project - dry run (no changes are made)",
+            new("Delete old pipelines in a project - dry run (no changes are made)",
                 new DeleteBuildPipelineArgument
                 {
                     AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com",
                     PipelinesToKeep = 80, ProjectId = 123456, DryRun = true
+                }),
+            new("Delete old pipelines of all projects of a group",
+                new DeleteBuildPipelineArgument
+                {
+                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com",
+                    PipelinesToKeep = 80, GroupId = 654321
                 })
         };
 }

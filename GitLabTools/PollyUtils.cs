@@ -7,6 +7,7 @@ using Polly.CircuitBreaker;
 using Polly.Retry;
 
 namespace GitLabTools;
+
 [ExcludeFromCodeCoverage]
 public static class PollyUtils
 {

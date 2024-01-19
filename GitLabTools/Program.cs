@@ -1,10 +1,12 @@
-﻿using System.Net;
+﻿using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using CommandLine;
 using Flurl.Http;
 using Flurl.Http.Configuration;
 using GitLabTools.Commandline;
 using GitLabTools.GitLab;
 using GitLabTools.Services;
+using GitLabTools.Validators;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -12,6 +14,7 @@ using NLog.Extensions.Logging;
 
 namespace GitLabTools;
 
+[ExcludeFromCodeCoverage]
 public static class Program
 {
     private static ILogger? _logger;
@@ -29,10 +32,11 @@ public static class Program
         try
         {
             var parsedResult =
-                Parser.Default.ParseArguments<DeleteBuildPipelineArgument, ReadProjectInformationArgument>(args);
+                Parser.Default.ParseArguments<DeleteBuildPipelineArgument, ReadProjectInformationArgument, ReadGroupInformationArgument>(args);
             return await parsedResult.MapResult(
                 (DeleteBuildPipelineArgument options) => DeleteBuildPipelineAsync(scope.ServiceProvider, options),
                 (ReadProjectInformationArgument options) => ReadProjectInformationAsync(scope.ServiceProvider, options),
+                (ReadGroupInformationArgument options) => ReadGroupInformationAsync(scope.ServiceProvider, options),
                 _ => Task.FromResult(ExitCodeTypes.ErrorUnexpectedError));
         }
         catch (ArgumentValidationException ave)
@@ -64,6 +68,7 @@ public static class Program
     {
         services.AddScoped<DeleteOldPipelinesService>();
         services.AddScoped<ReadProjectInformationService>();
+        services.AddScoped<ReadGroupInformationService>();
         services.AddSingleton<IGitlabRestApiClient, GitLabRestApiClient>();
         services.AddSingleton(_ =>
         {
@@ -94,20 +99,22 @@ public static class Program
 
     private static Task<ExitCodeTypes> DeleteBuildPipelineAsync(IServiceProvider serviceProvider, DeleteBuildPipelineArgument args)
     {
-        ValidateArgument(args);
+        DeleteBuildPipelineArgumentValidator.Validate(args);
         var deleteOldPipelinesService = serviceProvider.GetRequiredService<DeleteOldPipelinesService>();
         return deleteOldPipelinesService.DeleteBuildPipelineAsync(args);
     }
 
     private static Task<ExitCodeTypes> ReadProjectInformationAsync(IServiceProvider serviceProvider, ReadProjectInformationArgument args)
     {
-        ValidateArgument(args);
+        ReadProjectInformationArgumentValidator.Validate(args);
         var readProjectInformationService = serviceProvider.GetRequiredService<ReadProjectInformationService>();
         return readProjectInformationService.ReadProjectInformationAsync(args);
     }
 
-    private static void ValidateArgument(IValidatableCommandlineArgument args)
+    private static Task<ExitCodeTypes> ReadGroupInformationAsync(IServiceProvider serviceProvider, ReadGroupInformationArgument args)
     {
-        args.Validate();
+        ReadGroupInformationArgumentValidator.Validate(args);
+        var readGroupInformationService = serviceProvider.GetRequiredService<ReadGroupInformationService>();
+        return readGroupInformationService.ReadGroupInformationAsync(args);
     }
 }

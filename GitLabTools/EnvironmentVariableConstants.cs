@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics.CodeAnalysis;
 
 namespace GitLabTools;
+
 [ExcludeFromCodeCoverage]
 public static class EnvironmentVariableConstants
 {

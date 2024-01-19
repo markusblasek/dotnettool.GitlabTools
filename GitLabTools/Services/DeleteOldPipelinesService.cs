@@ -1,8 +1,10 @@
 ﻿using GitLabTools.Commandline;
 using GitLabTools.GitLab;
+using GitLabTools.GitLab.Models;
 using Microsoft.Extensions.Logging;
 
 namespace GitLabTools.Services;
+
 public class DeleteOldPipelinesService(
     ILogger<DeleteOldPipelinesService> logger,
     IGitlabRestApiClient gitlabRestApiClient)
@@ -16,42 +18,96 @@ public class DeleteOldPipelinesService(
     /// <returns></returns>
     public async Task<ExitCodeTypes> DeleteBuildPipelineAsync(DeleteBuildPipelineArgument args, CancellationToken cancellationToken = default)
     {
-        var project = await gitlabRestApiClient.ReadProjectAsync(args.GitLabUrl, args.AccessToken, args.ProjectId, cancellationToken);
         if (args.DryRun)
         {
             logger.LogInformation("Dry run enabled - no changes will be made");
         }
-        if (project == null)
+
+        var projects = await GetProjectsToDeletePipelinesFromOrNullAsync(args, cancellationToken);
+        if (projects == null)
         {
-            logger.LogWarning("Project with id '{projectId}' could not be found", args.ProjectId);
             return ExitCodeTypes.IllegalArguments;
         }
-        logger.LogTrace("Found project with id '{projectId}' (name: '{projectName}', url to repo: '{projectHttpUrlToRepo}')",
-            project.Id, project.Name, project.HttpUrlToRepo);
-        var pipelines = await gitlabRestApiClient.ReadAllPipelinesAsync(args.GitLabUrl, args.AccessToken, project, cancellationToken);
-        var pipelinesToDelete = pipelines.Skip(args.PipelinesToKeep).ToArray();
-        logger.LogTrace("{allPipelinesCount} pipelines exist and {pipelinesToDeleteCount} should be deleted for project id '{projectId}' ('{projectName}')",
-            pipelines.Length, pipelinesToDelete.Length, project.Id, project.Name);
 
-        if (pipelinesToDelete.Length > 0)
-        {
-            logger.LogInformation("{count} pipelines to delete for project id '{projectId}' ('{projectName}')",
-                pipelinesToDelete.Length, project.Id, project.Name);
-            if (args.DryRun)
-            {
-                return ExitCodeTypes.Ok;
-            }
-            await gitlabRestApiClient.DeletePipelinesAsync(args.GitLabUrl, args.AccessToken, project,
-                pipelinesToDelete, cancellationToken);
-            logger.LogInformation("{count} pipelines deleted for project id '{projectId}' ('{projectName}')",
-                pipelinesToDelete.Length, project.Id, project.Name);
-        }
-        else
-        {
-            logger.LogInformation("{count} pipelines to delete for project id '{projectId}' ('{projectName}'), nothing to do",
-                pipelinesToDelete.Length, project.Id, project.Name);
-        }
+        await DeletePipelinesFromProjectsAsync(args, projects, cancellationToken);
 
         return ExitCodeTypes.Ok;
+    }
+
+    /// <returns>the projects or null (no project/group found) or an empty list (group has no projects)</returns>
+    private async Task<Project[]?> GetProjectsToDeletePipelinesFromOrNullAsync(DeleteBuildPipelineArgument args, CancellationToken cancellationToken)
+    {
+        if (args.GroupId.HasValue)
+        {
+            var group = await gitlabRestApiClient.ReadGroupAsync(args.GitLabUrl, args.AccessToken, args.GroupId.Value,
+                cancellationToken);
+            if (group == null)
+            {
+                logger.LogWarning("Group with id '{groupId}' could not be found", args.GroupId);
+                return null;
+            }
+
+            if (group.Projects != null && group.Projects.Length != 0)
+            {
+                return group.Projects.Where(x => x.Id.HasValue).ToArray();
+            }
+
+            logger.LogWarning("Group with id '{groupId}' has no projects", args.GroupId);
+            return [];
+
+        }
+
+        if (args.ProjectId.HasValue)
+        {
+            var project = await gitlabRestApiClient.ReadProjectAsync(args.GitLabUrl, args.AccessToken, args.ProjectId.Value,
+                cancellationToken);
+            if (project == null)
+            {
+                logger.LogWarning("Project with id '{projectId}' could not be found", args.ProjectId);
+                return null;
+            }
+
+            logger.LogTrace(
+                "Found project with id '{projectId}' (name: '{projectName}', url to repo: '{projectHttpUrlToRepo}')",
+                project.Id, project.Name, project.HttpUrlToRepo);
+            return [project];
+        }
+
+        throw new InvalidOperationException($"Either {nameof(args.ProjectId)} nor {nameof(args.GroupId)} is set");
+    }
+
+    private async Task DeletePipelinesFromProjectsAsync(DeleteBuildPipelineArgument args, IEnumerable<Project> projects, CancellationToken cancellationToken)
+    {
+        foreach (var project in projects)
+        {
+            var pipelines =
+                await gitlabRestApiClient.ReadAllPipelinesAsync(args.GitLabUrl, args.AccessToken, project,
+                    cancellationToken);
+            var pipelinesToDelete = pipelines.Skip(args.PipelinesToKeep).OrderBy(x => x.Id).ToArray();
+            logger.LogTrace(
+                "{allPipelinesCount} pipelines exist and {pipelinesToDeleteCount} should be deleted for project id '{projectId}' ('{projectName}')",
+                pipelines.Length, pipelinesToDelete.Length, project.Id, project.Name);
+
+            if (pipelinesToDelete.Length > 0)
+            {
+                logger.LogInformation("{count} pipelines to delete for project id '{projectId}' ('{projectName}')",
+                    pipelinesToDelete.Length, project.Id, project.Name);
+                if (args.DryRun)
+                {
+                    continue;
+                }
+
+                await gitlabRestApiClient.DeletePipelinesAsync(args.GitLabUrl, args.AccessToken, project,
+                    pipelinesToDelete, cancellationToken);
+                logger.LogInformation("{count} pipelines deleted for project id '{projectId}' ('{projectName}')",
+                    pipelinesToDelete.Length, project.Id, project.Name);
+            }
+            else
+            {
+                logger.LogInformation(
+                    "{count} pipelines to delete for project id '{projectId}' ('{projectName}'), nothing to do",
+                    pipelinesToDelete.Length, project.Id, project.Name);
+            }
+        }
     }
 }
