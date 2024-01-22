@@ -35,19 +35,19 @@ public class DeleteBuildPipelineArgument : IGitLabInformationArgument
             new("Delete old pipelines in a project", 
                 new DeleteBuildPipelineArgument
                 {
-                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com", 
+                    AccessToken = "<PersonalAccessToken>", GitLabUrl = "https://mygitlabinstance.com", 
                     PipelinesToKeep = 80, ProjectId = 123456
                 }),
             new("Delete old pipelines in a project - dry run (no changes are made)",
                 new DeleteBuildPipelineArgument
                 {
-                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com",
+                    AccessToken = "<PersonalAccessToken>", GitLabUrl = "https://mygitlabinstance.com",
                     PipelinesToKeep = 80, ProjectId = 123456, DryRun = true
                 }),
             new("Delete old pipelines of all projects of a group",
                 new DeleteBuildPipelineArgument
                 {
-                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com",
+                    AccessToken = "<PersonalAccessToken>", GitLabUrl = "https://mygitlabinstance.com",
                     PipelinesToKeep = 80, GroupId = 654321
                 })
         };

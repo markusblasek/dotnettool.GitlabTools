@@ -5,7 +5,7 @@ using CommandLine.Text;
 namespace GitLabTools.Commandline;
 
 [ExcludeFromCodeCoverage]
-[Verb("readProject", false, ["rp"], HelpText = "Read project information")]
+[Verb("readProject", false, ["rp"], HelpText = "Read project information and print it to console as json string (important properties)")]
 public class ReadProjectInformationArgument : IGitLabInformationArgument
 {
     [Option('p', "projectId", Required = true, HelpText = "Project ID to read information from")]
@@ -26,7 +26,7 @@ public class ReadProjectInformationArgument : IGitLabInformationArgument
             new("Read project information",
                 new ReadProjectInformationArgument
                 {
-                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com", ProjectId = 123456
+                    AccessToken = "<PersonalAccessToken>", GitLabUrl = "https://mygitlabinstance.com", ProjectId = 123456
                 })
         };
 }

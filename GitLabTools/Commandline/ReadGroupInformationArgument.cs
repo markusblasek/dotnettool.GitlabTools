@@ -5,7 +5,7 @@ using CommandLine.Text;
 namespace GitLabTools.Commandline;
 
 [ExcludeFromCodeCoverage]
-[Verb("readGroup", false, ["rg"], HelpText = "Read group information")]
+[Verb("readGroup", false, ["rg"], HelpText = "Read group information and print it to console as json string (important properties)")]
 public class ReadGroupInformationArgument : IGitLabInformationArgument
 {
     [Option('g', "groupId", Required = true, HelpText = "Group ID to read information from")]
@@ -26,7 +26,7 @@ public class ReadGroupInformationArgument : IGitLabInformationArgument
             new("Read group information",
                 new ReadGroupInformationArgument
                 {
-                    AccessToken = "#PersonalAccessToken#", GitLabUrl = "https://gitlab.test.com", GroupId = 123456
+                    AccessToken = "<PersonalAccessToken>", GitLabUrl = "https://mygitlabinstance.com", GroupId = 123456
                 })
         };
 }
