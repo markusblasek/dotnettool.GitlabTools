@@ -1,6 +1,6 @@
-# GitlabTools
+# GitLabTools
 
-URL encodes an string and decodes an url encoded string.
+Tool to delete old pipelines from gitlab or read project/group information.
 
 ## License
 
