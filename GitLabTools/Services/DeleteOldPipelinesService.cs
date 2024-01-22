@@ -7,6 +7,7 @@ using Microsoft.Extensions.Logging;
 namespace GitLabTools.Services;
 
 public class DeleteOldPipelinesService(
+    TimeProvider timeProvider,
     IGitlabRestApiClient gitlabRestApiClient,
     ILogger<DeleteOldPipelinesService> logger)
 {
@@ -84,17 +85,17 @@ public class DeleteOldPipelinesService(
         foreach (var project in projects)
         {
             var pipelines =
-                await gitlabRestApiClient.ReadAllPipelinesAsync(args.GitLabUrl, args.AccessToken, project,
-                    cancellationToken);
-            var pipelinesToDelete = pipelines.Skip(args.PipelinesToKeep).OrderBy(x => x.Id).ToArray();
+                (await gitlabRestApiClient.ReadAllPipelinesAsync(args.GitLabUrl, args.AccessToken, project,
+                    cancellationToken)).OrderBy(x => x.Id).ToArray();
+            var pipelinesToDelete = FilterPipelines(pipelines, args);
             logger.LogTrace(
                 "{allPipelinesCount} pipelines exist and {pipelinesToDeleteCount} should be deleted for project id '{projectId}' ('{projectName}')",
                 pipelines.Length, pipelinesToDelete.Length, project.Id, project.Name);
 
             if (pipelinesToDelete.Length > 0)
             {
-                logger.LogInformation("{count} pipelines to delete for project id '{projectId}' ('{projectName}')",
-                    pipelinesToDelete.Length, project.Id, project.Name);
+                logger.LogInformation("{countPipelinesToDelete} out of {countAllPipelines} pipelines to delete for project id '{projectId}' ('{projectName}')",
+                    pipelinesToDelete.Length, pipelines.Length, project.Id, project.Name);
                 if (args.DryRun)
                 {
                     continue;
@@ -108,9 +109,28 @@ public class DeleteOldPipelinesService(
             else
             {
                 logger.LogInformation(
-                    "{count} pipelines to delete for project id '{projectId}' ('{projectName}'), nothing to do",
-                    pipelinesToDelete.Length, project.Id, project.Name);
+                    "{countPipelinesToDelete} out of {countAllPipelines} pipelines to delete for project id '{projectId}' ('{projectName}'), nothing to do",
+                    pipelinesToDelete.Length, pipelines.Length, project.Id, project.Name);
             }
         }
+    }
+
+    private Pipeline[] FilterPipelines(IEnumerable<Pipeline> pipelines, DeleteBuildPipelineArgument args)
+    {
+        var query = pipelines.AsQueryable();
+
+        if (args.PipelinesToKeep.HasValue)
+        {
+            query = query.Skip(args.PipelinesToKeep.Value);
+        }
+
+        if (args.PipelinesOlderThanInDays.HasValue)
+        {
+            var utcNow = timeProvider.GetUtcNow();
+            var createdAtFromValue = utcNow.Subtract(TimeSpan.FromDays(args.PipelinesOlderThanInDays.Value));
+            query = query.Where(x => x.CreatedAt.ToUniversalTime() < createdAtFromValue);
+        }
+
+        return query.ToArray();
     }
 }

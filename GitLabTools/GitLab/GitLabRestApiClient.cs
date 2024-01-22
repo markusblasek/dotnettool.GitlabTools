@@ -103,7 +103,7 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     private async Task<Pipeline[]> ReadPipelinesFromGitlabAsync(
         IFlurlClient client, Project project, int pageNum, CancellationToken cancellationToken)
     {
-        var jsonPropertyNameId = ExpressionUtils.GetJsonPropertyName(() => new Group().Id);
+        var jsonPropertyNameId = ExpressionUtils.GetJsonPropertyName(() => new Pipeline().Id);
         var url = client.BaseUrl
             .AppendPathSegments("api", "v4", "projects", project.Id, "pipelines")
             .SetQueryParam(QueryParamNamePage, pageNum)

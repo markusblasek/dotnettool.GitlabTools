@@ -89,6 +89,16 @@ public class DeleteBuildPipelineArgumentValidatorTests
         Assert.ThrowsException<ArgumentValidationException>(() => DeleteBuildPipelineArgumentValidator.Validate(input));
     }
 
+    [TestMethod]
+    [DataRow(-1)]
+    public void Validate_InvalidPipelinesOlderThanInDays_ThrowException(int pipelinesOlderThanInDays)
+    {
+        var input = CreateValidArguments();
+        input.PipelinesOlderThanInDays = pipelinesOlderThanInDays;
+
+        Assert.ThrowsException<ArgumentValidationException>(() => DeleteBuildPipelineArgumentValidator.Validate(input));
+    }
+
     private static DeleteBuildPipelineArgument CreateValidArguments()
     {
         return new DeleteBuildPipelineArgument

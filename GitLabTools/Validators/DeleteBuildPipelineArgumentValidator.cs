@@ -15,6 +15,8 @@ public static class DeleteBuildPipelineArgumentValidator
             ExpressionUtils.GetCommandlineArgumentLongName(() => args.GroupId);
         var argumentNamePipelinesToKeep =
             ExpressionUtils.GetCommandlineArgumentLongName(() => args.PipelinesToKeep);
+        var argumentNamePipelinesOlderThanInDays =
+            ExpressionUtils.GetCommandlineArgumentLongName(() => args.PipelinesOlderThanInDays);
 
         if (args.ProjectId is < ValidationConstants.ProjectIdMinValue)
         {
@@ -31,6 +33,10 @@ public static class DeleteBuildPipelineArgumentValidator
         if (args.PipelinesToKeep < 0)
         {
             throw new ArgumentValidationException($"{argumentNamePipelinesToKeep} is less than 0");
+        }
+        if (args.PipelinesOlderThanInDays is < 0)
+        {
+            throw new ArgumentValidationException($"{argumentNamePipelinesOlderThanInDays} is less than 0");
         }
     }
 }

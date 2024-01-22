@@ -11,20 +11,20 @@ public class ExpressionUtilsTests
     [TestMethod]
     public void GetAttribute_PropertyHasAttribute_ReturnAttribute()
     {
-        var result = ExpressionUtils.GetAttribute<JsonPropertyNameAttribute, string>(() => new UtModel().Dummy);
+        var result = ExpressionUtils.GetAttribute<JsonPropertyNameAttribute, string>(() => UtModel.Dummy);
         Assert.IsNotNull(result);
     }
 
     [TestMethod]
     public void GetAttribute_PropertyHasNotAttribute_ThrowException()
     {
-        Assert.ThrowsException<ArgumentException>(() => ExpressionUtils.GetAttribute<ObsoleteAttribute, string>(() => new UtModel().Dummy));
+        Assert.ThrowsException<ArgumentException>(() => ExpressionUtils.GetAttribute<ObsoleteAttribute, string>(() => UtModel.Dummy));
     }
 
     [TestMethod]
     public void GetCommandlineArgumentLongName_PropertyHasOptionAttributeWithLongName_ReturnLongName()
     {
-        var result = ExpressionUtils.GetCommandlineArgumentLongName(() => new UtModel().Dummy);
+        var result = ExpressionUtils.GetCommandlineArgumentLongName(() => UtModel.Dummy);
         Assert.IsNotNull(result);
         Assert.AreEqual("dummy", result);
     }
@@ -32,7 +32,7 @@ public class ExpressionUtilsTests
     [TestMethod]
     public void GetOptionAttribute_PropertyHasOptionAttribute_ReturnAttribute()
     {
-        var result = ExpressionUtils.GetOptionAttribute(() => new UtModel().Dummy);
+        var result = ExpressionUtils.GetOptionAttribute(() => UtModel.Dummy);
         Assert.IsNotNull(result);
         Assert.AreEqual("dummy", result.LongName);
     }
@@ -40,7 +40,7 @@ public class ExpressionUtilsTests
     [TestMethod]
     public void GetJsonPropertyName_PropertyHasJsonPropertyNameAttribute_ReturnName()
     {
-        var result = ExpressionUtils.GetJsonPropertyName(() => new UtModel().Dummy);
+        var result = ExpressionUtils.GetJsonPropertyName(() => UtModel.Dummy);
         Assert.IsNotNull(result);
         Assert.AreEqual("dummyJson", result);
     }
@@ -48,16 +48,17 @@ public class ExpressionUtilsTests
     [TestMethod]
     public void GetJsonPropertyNameAttribute_PropertyHasJsonPropertyNameAttribute_ReturnAttribute()
     {
-        var result = ExpressionUtils.GetJsonPropertyNameAttribute(() => new UtModel().Dummy);
+        var result = ExpressionUtils.GetJsonPropertyNameAttribute(() => UtModel.Dummy);
         Assert.IsNotNull(result);
         Assert.AreEqual("dummyJson", result.Name);
     }
 
+    // ReSharper disable once ClassNeverInstantiated.Local
     private class UtModel
     {
         [JsonPropertyName("dummyJson")]
         [Option('a', "dummy")]
-        public string Dummy => string.Empty;
+        public static string Dummy => string.Empty;
     }
 
     

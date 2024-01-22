@@ -69,6 +69,7 @@ public static class Program
         services.AddScoped<ReadProjectInformationService>();
         services.AddScoped<ReadGroupInformationService>();
         services.AddSingleton<IGitlabRestApiClient, GitLabRestApiClient>();
+        services.AddSingleton(TimeProvider.System);
         services.AddSingleton(_ =>
         {
             var result = new FlurlClientCache()
