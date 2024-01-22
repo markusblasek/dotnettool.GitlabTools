@@ -16,7 +16,7 @@ public class DeleteOldPipelinesServiceTests
     private const int ExpectedGroupId = 4711;
     private const int ExpectedProjectId = 1147;
     private const int ExpectedPipelineId1 = 1417;
-    private const int ExpectedPipelineId2 = 1416;
+    private const int ExpectedPipelineId2 = 1418;
     private static readonly DateTime ExpectedUtcNow = new(2020, 12, 24, 0, 0, 1, DateTimeKind.Utc);
     private static readonly DateTime ExpectedPipeline1CreatedAtUtc = new(2020, 12, 22, 0, 0, 1, DateTimeKind.Utc);
     private static readonly DateTime ExpectedPipeline2CreatedAtUtc = new(2020, 12, 23, 0, 0, 1, DateTimeKind.Utc);
@@ -178,6 +178,51 @@ public class DeleteOldPipelinesServiceTests
             ]);
         var sut = CreateSut(mockGitLabRestApiClient.Object);
         var args = CreateArgumentsWithProjectId();
+        var result = await sut.DeleteBuildPipelineAsync(args);
+        Assert.AreEqual(result, ExitCodeTypes.Ok);
+        mockGitLabRestApiClient
+            .Verify(x => x.ReadProjectAsync(ExpectedGitLabUrl, ExpectedAccessToken, ExpectedProjectId, It.IsAny<CancellationToken>())
+                , Times.Once);
+        mockGitLabRestApiClient
+            .Verify(x => x.ReadAllPipelinesAsync(ExpectedGitLabUrl, ExpectedAccessToken,
+                    It.Is<Project>(y => y.Id == ExpectedProjectId), It.IsAny<CancellationToken>())
+                , Times.Once);
+        mockGitLabRestApiClient
+            .Verify(x => x.DeletePipelinesAsync(ExpectedGitLabUrl, ExpectedAccessToken,
+                    It.Is<Project>(y => y.Id == ExpectedProjectId), It.Is<Pipeline[]>(y => VerifyPipelines(y)), It.IsAny<CancellationToken>())
+                , Times.Once);
+    }
+
+    [TestMethod]
+    public async Task DeleteBuildPipelineAsync_ProjectExists_PipelinesToKeepIsSet_DeletePipeline1ButNotPipeline2DueToValueInPipelinesToKeep()
+    {
+        var mockGitLabRestApiClient = new Mock<IGitlabRestApiClient>();
+        mockGitLabRestApiClient
+            .Setup(x =>
+                x.ReadProjectAsync(It.IsAny<string>(), It.IsAny<string>(),
+                    It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new Project
+            {
+                Id = ExpectedProjectId
+            });
+        mockGitLabRestApiClient.Setup(x =>
+                x.ReadAllPipelinesAsync(It.IsAny<string>(), It.IsAny<string>(),
+                    It.IsAny<Project>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync([
+                new Pipeline
+                {
+                    Id = ExpectedPipelineId2,
+                    CreatedAt = ExpectedPipeline2CreatedAtUtc
+                },
+                new Pipeline
+                {
+                    Id = ExpectedPipelineId1,
+                    CreatedAt = ExpectedPipeline1CreatedAtUtc
+                }
+            ]);
+        var sut = CreateSut(mockGitLabRestApiClient.Object);
+        var args = CreateArgumentsWithProjectId();
+        args.PipelinesToKeep = 1;
         var result = await sut.DeleteBuildPipelineAsync(args);
         Assert.AreEqual(result, ExitCodeTypes.Ok);
         mockGitLabRestApiClient

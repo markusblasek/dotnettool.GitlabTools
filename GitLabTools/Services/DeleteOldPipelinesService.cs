@@ -86,7 +86,7 @@ public class DeleteOldPipelinesService(
         {
             var pipelines =
                 (await gitlabRestApiClient.ReadAllPipelinesAsync(args.GitLabUrl, args.AccessToken, project,
-                    cancellationToken)).OrderBy(x => x.Id).ToArray();
+                    cancellationToken)).OrderByDescending(x => x.Id).ToArray();
             var pipelinesToDelete = FilterPipelines(pipelines, args);
             logger.LogTrace(
                 "{allPipelinesCount} pipelines exist and {pipelinesToDeleteCount} should be deleted for project id '{projectId}' ('{projectName}')",
@@ -100,10 +100,10 @@ public class DeleteOldPipelinesService(
                 {
                     continue;
                 }
-
+                logger.LogInformation("Deleting {countPipelinesToDelete} pipelines...", pipelinesToDelete.Length);
                 await gitlabRestApiClient.DeletePipelinesAsync(args.GitLabUrl, args.AccessToken, project,
                     pipelinesToDelete, cancellationToken);
-                logger.LogInformation("{count} pipelines deleted for project id '{projectId}' ('{projectName}')",
+                logger.LogInformation("{countPipelinesToDelete} pipelines deleted for project id '{projectId}' ('{projectName}')",
                     pipelinesToDelete.Length, project.Id, project.Name);
             }
             else
@@ -131,6 +131,6 @@ public class DeleteOldPipelinesService(
             query = query.Where(x => x.CreatedAt.ToUniversalTime() < createdAtFromValue);
         }
 
-        return query.ToArray();
+        return query.OrderBy(x => x.Id).ToArray();
     }
 }
