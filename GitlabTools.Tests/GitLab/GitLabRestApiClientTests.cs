@@ -123,7 +123,8 @@ public class GitLabRestApiClientTests
             {
                 new()
                 {
-                    Id = ExpectedPipelineId
+                    Id = ExpectedPipelineId,
+                    Status = PipelineStatusConstants.Success
                 }
             })
             .RespondWithJson(Array.Empty<Pipeline>());

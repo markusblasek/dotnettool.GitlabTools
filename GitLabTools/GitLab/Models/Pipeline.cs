@@ -10,14 +10,17 @@ public class Pipeline
     [JsonPropertyName("id")]
     public int? Id { get; set; }
 
-    [JsonPropertyName("description")]
-    public string? Description { get; set; }
+    [JsonPropertyName("iid")]
+    public int? Iid { get; set; }
 
-    [JsonPropertyName("name")]
-    public string? Name { get; set; }
+    [JsonPropertyName("project_id")]
+    public int? ProjectId { get; set; }
 
-    [JsonPropertyName("http_url_to_repo")]
-    public string? HttpUrlToRepo { get; set; }
+    [JsonPropertyName("status")]
+    public string? Status { get; set; }
+
+    [JsonPropertyName("web_url")]
+    public string? WebUrl { get; set; }
 
     [JsonPropertyName("created_at")]
     public DateTime CreatedAt { get; set; }

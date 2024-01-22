@@ -17,9 +17,11 @@ public class DeleteOldPipelinesServiceTests
     private const int ExpectedProjectId = 1147;
     private const int ExpectedPipelineId1 = 1417;
     private const int ExpectedPipelineId2 = 1418;
+    private const int ExpectedPipelineId3 = 1419;
     private static readonly DateTime ExpectedUtcNow = new(2020, 12, 24, 0, 0, 1, DateTimeKind.Utc);
     private static readonly DateTime ExpectedPipeline1CreatedAtUtc = new(2020, 12, 22, 0, 0, 1, DateTimeKind.Utc);
     private static readonly DateTime ExpectedPipeline2CreatedAtUtc = new(2020, 12, 23, 0, 0, 1, DateTimeKind.Utc);
+    private static readonly DateTime ExpectedPipeline3CreatedAtUtc = new(2020, 12, 24, 0, 0, 0, DateTimeKind.Utc);
 
     [TestMethod]
     public async Task ReadGroupInformationAsync_GroupExists_CallExpectedMethods()
@@ -46,7 +48,8 @@ public class DeleteOldPipelinesServiceTests
                 new Pipeline
                 {
                     Id = ExpectedPipelineId1,
-                    CreatedAt = ExpectedPipeline1CreatedAtUtc
+                    CreatedAt = ExpectedPipeline1CreatedAtUtc,
+                    Status = PipelineStatusConstants.Success
                 }
             ]);
         var sut = CreateSut(mockGitLabRestApiClient.Object);
@@ -91,7 +94,8 @@ public class DeleteOldPipelinesServiceTests
                 new Pipeline
                 {
                     Id = ExpectedPipelineId1,
-                    CreatedAt = ExpectedPipeline1CreatedAtUtc
+                    CreatedAt = ExpectedPipeline1CreatedAtUtc,
+                    Status = PipelineStatusConstants.Success
                 }
             ]);
         var sut = CreateSut(mockGitLabRestApiClient.Object);
@@ -155,7 +159,10 @@ public class DeleteOldPipelinesServiceTests
     }
 
     [TestMethod]
-    public async Task DeleteBuildPipelineAsync_ProjectExists_CallExpectedMethods()
+    [DataRow(PipelineStatusConstants.Success)]
+    [DataRow(PipelineStatusConstants.Canceled)]
+    [DataRow(PipelineStatusConstants.Failed)]
+    public async Task DeleteBuildPipelineAsync_ProjectExists_CallExpectedMethods(string pipelineStatus)
     {
         var mockGitLabRestApiClient = new Mock<IGitlabRestApiClient>();
         mockGitLabRestApiClient
@@ -173,7 +180,22 @@ public class DeleteOldPipelinesServiceTests
                 new Pipeline
                 {
                     Id = ExpectedPipelineId1,
-                    CreatedAt = ExpectedPipeline1CreatedAtUtc
+                    CreatedAt = ExpectedPipeline1CreatedAtUtc,
+                    Status = pipelineStatus
+                },
+                // Do not delete running pipelines
+                new Pipeline
+                {
+                    Id = ExpectedPipelineId2,
+                    CreatedAt = ExpectedPipeline2CreatedAtUtc,
+                    Status = PipelineStatusConstants.Running
+                },
+                // Do not delete  pending pipelines
+                new Pipeline
+                {
+                    Id = ExpectedPipelineId3,
+                    CreatedAt = ExpectedPipeline3CreatedAtUtc,
+                    Status = PipelineStatusConstants.Pending
                 }
             ]);
         var sut = CreateSut(mockGitLabRestApiClient.Object);
@@ -212,12 +234,14 @@ public class DeleteOldPipelinesServiceTests
                 new Pipeline
                 {
                     Id = ExpectedPipelineId2,
-                    CreatedAt = ExpectedPipeline2CreatedAtUtc
+                    CreatedAt = ExpectedPipeline2CreatedAtUtc,
+                    Status = PipelineStatusConstants.Success
                 },
                 new Pipeline
                 {
                     Id = ExpectedPipelineId1,
-                    CreatedAt = ExpectedPipeline1CreatedAtUtc
+                    CreatedAt = ExpectedPipeline1CreatedAtUtc,
+                    Status = PipelineStatusConstants.Success
                 }
             ]);
         var sut = CreateSut(mockGitLabRestApiClient.Object);
@@ -257,12 +281,14 @@ public class DeleteOldPipelinesServiceTests
                 new Pipeline
                 {
                     Id = ExpectedPipelineId2,
-                    CreatedAt = ExpectedPipeline2CreatedAtUtc
+                    CreatedAt = ExpectedPipeline2CreatedAtUtc,
+                    Status = PipelineStatusConstants.Success
                 },
                 new Pipeline
                 {
                     Id = ExpectedPipelineId1,
-                    CreatedAt = ExpectedPipeline1CreatedAtUtc
+                    CreatedAt = ExpectedPipeline1CreatedAtUtc,
+                    Status = PipelineStatusConstants.Success
                 }
             ]);
         var sut = CreateSut(mockGitLabRestApiClient.Object);

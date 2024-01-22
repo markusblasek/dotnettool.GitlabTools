@@ -97,7 +97,7 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
             result.AddRange(pipelines);
             pipelines = await ReadPipelinesFromGitlabAsync(client, project, ++pageNum, cancellationToken);
         }
-        return result.Where(x => x.Id.HasValue).ToArray();
+        return result.Where(x => x.Id.HasValue && !string.IsNullOrWhiteSpace(x.Status)).ToArray();
     }
 
     private async Task<Pipeline[]> ReadPipelinesFromGitlabAsync(

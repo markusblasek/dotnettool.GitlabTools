@@ -117,7 +117,12 @@ public class DeleteOldPipelinesService(
 
     private Pipeline[] FilterPipelines(IEnumerable<Pipeline> pipelines, DeleteBuildPipelineArgument args)
     {
-        var query = pipelines.AsQueryable();
+        var query = pipelines
+            .Where(x => !string.IsNullOrWhiteSpace(x.Status) && 
+                        (x.Status.Equals(PipelineStatusConstants.Success, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Status.Equals(PipelineStatusConstants.Failed, StringComparison.InvariantCultureIgnoreCase)
+                         || x.Status.Equals(PipelineStatusConstants.Canceled, StringComparison.InvariantCultureIgnoreCase)))
+            .AsQueryable();
 
         if (args.PipelinesToKeep.HasValue)
         {
