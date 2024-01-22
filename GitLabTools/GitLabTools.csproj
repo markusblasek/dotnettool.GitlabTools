@@ -18,6 +18,8 @@
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <RepositoryUrl>https://github.com/markusblasek/dotnettool.gitlabtools</RepositoryUrl>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
     <PackageTags>gitlab;dotnet tool</PackageTags>
     <Authors>Markus Blasek</Authors>
     <Company />

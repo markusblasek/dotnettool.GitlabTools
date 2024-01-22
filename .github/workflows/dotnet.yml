@@ -41,10 +41,17 @@ jobs:
       run: cat code-coverage-results.md >> $GITHUB_STEP_SUMMARY
     - name: Package
       run: dotnet pack --no-build -c Release
-    - name: 'Upload Artifact'
-      uses: actions/upload-artifact@v3
+    - name: 'Upload NuGetPackage'
+      uses: actions/upload-artifact@v4
       with:
         name: GitLabToolsNugetPackages
         path: GitLabTools/nupkg/*.nupkg
+        retention-days: 1
+        if-no-files-found: error
+    - name: 'Upload Symbol NuGet Package'
+      uses: actions/upload-artifact@v4
+      with:
+        name: GitLabToolsSymbolNugetPackages
+        path: GitLabTools/nupkg/*.snupkg
         retention-days: 1
         if-no-files-found: error
