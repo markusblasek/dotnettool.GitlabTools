@@ -3,8 +3,6 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34408.163
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitLabTools", "GitLabTools\GitLabTools.csproj", "{86E46106-027D-4736-A88E-2B87973FBFD3}"
-EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{B0CB46B0-3818-4D66-A753-D1D9733F48E5}"
 	ProjectSection(SolutionItems) = preProject
 		CHANGELOG.md = CHANGELOG.md
@@ -12,7 +10,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GitlabTools.Tests", "GitlabTools.Tests\GitlabTools.Tests.csproj", "{94A5F9B7-0E0D-476F-B741-D5334D04B0F8}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitLabTools.GitLabRestClient", "GitLabTools.GitLabRestClient\GitLabTools.GitLabRestClient.csproj", "{6B71E291-3907-4708-86C0-86C0AE4C464B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitLabTools.GitLabRestClient.Tests", "GitLabTools.GitLabRestClient.Tests\GitLabTools.GitLabRestClient.Tests.csproj", "{5704CD08-7484-4C15-A65A-8A2A2D7F0E68}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitLabTools.Tool", "GitLabTools.Tool\GitLabTools.Tool.csproj", "{F37A040C-4C90-4376-AFA0-55D29EE37614}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "GitLabTools.Tool.Tests", "GitLabTools.Tool.Tests\GitLabTools.Tool.Tests.csproj", "{74DBE3F0-8C8D-4809-87CD-CD2052416397}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -20,14 +24,22 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{86E46106-027D-4736-A88E-2B87973FBFD3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{86E46106-027D-4736-A88E-2B87973FBFD3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{86E46106-027D-4736-A88E-2B87973FBFD3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{86E46106-027D-4736-A88E-2B87973FBFD3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{94A5F9B7-0E0D-476F-B741-D5334D04B0F8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{94A5F9B7-0E0D-476F-B741-D5334D04B0F8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{94A5F9B7-0E0D-476F-B741-D5334D04B0F8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{94A5F9B7-0E0D-476F-B741-D5334D04B0F8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6B71E291-3907-4708-86C0-86C0AE4C464B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6B71E291-3907-4708-86C0-86C0AE4C464B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6B71E291-3907-4708-86C0-86C0AE4C464B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6B71E291-3907-4708-86C0-86C0AE4C464B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5704CD08-7484-4C15-A65A-8A2A2D7F0E68}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5704CD08-7484-4C15-A65A-8A2A2D7F0E68}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5704CD08-7484-4C15-A65A-8A2A2D7F0E68}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5704CD08-7484-4C15-A65A-8A2A2D7F0E68}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F37A040C-4C90-4376-AFA0-55D29EE37614}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F37A040C-4C90-4376-AFA0-55D29EE37614}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F37A040C-4C90-4376-AFA0-55D29EE37614}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F37A040C-4C90-4376-AFA0-55D29EE37614}.Release|Any CPU.Build.0 = Release|Any CPU
+		{74DBE3F0-8C8D-4809-87CD-CD2052416397}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{74DBE3F0-8C8D-4809-87CD-CD2052416397}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{74DBE3F0-8C8D-4809-87CD-CD2052416397}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{74DBE3F0-8C8D-4809-87CD-CD2052416397}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

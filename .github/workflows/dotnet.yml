@@ -45,13 +45,13 @@ jobs:
       uses: actions/upload-artifact@v4
       with:
         name: GitLabToolsNugetPackages
-        path: GitLabTools/nupkg/*.nupkg
+        path: GitLabTools.Tool/nupkg/*.nupkg
         retention-days: 1
         if-no-files-found: error
     - name: 'Upload Symbol NuGet Package'
       uses: actions/upload-artifact@v4
       with:
         name: GitLabToolsSymbolNugetPackages
-        path: GitLabTools/nupkg/*.snupkg
+        path: GitLabTools.Tool/nupkg/*.snupkg
         retention-days: 1
         if-no-files-found: error
