@@ -91,16 +91,21 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
     {
         var result = new List<Pipeline>();
         var pageNum = 1;
-        var pipelines = await ReadPipelinesFromGitlabAsync(client, project, pageNum, cancellationToken);
-        while (pipelines is { Length: > 0 })
+        var paginatedResult = await ReadPipelinesFromGitlabAsync(client, project, pageNum, cancellationToken);
+        var pagesTotal = paginatedResult.PagesTotal;
+        while (paginatedResult.Data?.Length > 0)
         {
-            result.AddRange(pipelines);
-            pipelines = await ReadPipelinesFromGitlabAsync(client, project, ++pageNum, cancellationToken);
+            result.AddRange(paginatedResult.Data);
+            if (pageNum >= pagesTotal)
+            {
+                break;
+            }
+            paginatedResult = await ReadPipelinesFromGitlabAsync(client, project, ++pageNum, cancellationToken);
         }
         return result.Where(x => x.Id.HasValue && !string.IsNullOrWhiteSpace(x.Status)).ToArray();
     }
 
-    private async Task<Pipeline[]> ReadPipelinesFromGitlabAsync(
+    private async Task<PaginatedResult<Pipeline>> ReadPipelinesFromGitlabAsync(
         IFlurlClient client, Project project, int pageNum, CancellationToken cancellationToken)
     {
         var jsonPropertyNameId = ExpressionUtils.GetJsonPropertyName(() => new Pipeline().Id);
@@ -110,8 +115,40 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
             .SetQueryParam(QueryParamNamePerPage, MaxResultsPerPage)
             .SetQueryParam(QueryParamNameOrderBy, jsonPropertyNameId)
             .SetQueryParam(QueryParamNameSort, "desc");
-        return await ExecuteRequestWithJsonResponseBodyAsync<Pipeline[], GitLabFailedException>(
-            _asyncPolicyForExecuteHttpRequestsToGitlabCi, client, HttpMethod.Get, url, null, cancellationToken);
+
+        try
+        {
+            var response = await ExecuteRequestAsync<GitLabFailedException>(
+                _asyncPolicyForExecuteHttpRequestsToGitlabCi, client,
+                HttpMethod.Get, url, null, cancellationToken);
+            var result = new PaginatedResult<Pipeline>();
+            if (response.Headers.TryGetFirst("x-page", out var pageNumAsString) && int.TryParse(pageNumAsString, out var parsedPageNum))
+            {
+                result.PageNum = parsedPageNum;
+            }
+
+            if (response.Headers.TryGetFirst("x-total-pages", out var totalPagesAsString) && int.TryParse(totalPagesAsString, out var parsedTotalPage))
+            {
+                result.PagesTotal = parsedTotalPage;
+            }
+
+            if (response.Headers.TryGetFirst("x-per-page", out var perPageAsString) && int.TryParse(perPageAsString, out var parsedPerPage))
+            {
+                result.PerPage = parsedPerPage;
+            }
+
+            if (response.Headers.TryGetFirst("x-total", out var totalAsString) && int.TryParse(totalAsString, out var parsedTotal))
+            {
+                result.Total = parsedTotal;
+            }
+
+            result.Data = await response.GetJsonAsync<Pipeline[]>().ConfigureAwait(false);
+            return result;
+        }
+        catch (FlurlHttpException ex)
+        {
+            throw await HandleFlurlExceptionAsync<GitLabFailedException>(ex);
+        }
     }
 
     /// <inheritdoc />
@@ -142,6 +179,37 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
         return _client;
     }
 
+
+    /// <summary>
+    /// Executes the request and returns the parsed json http body
+    /// </summary>
+    /// <typeparam name="T">Exception to throw if an error occured</typeparam>
+    /// <param name="policy"></param>
+    /// <param name="flurlClient"></param>
+    /// <param name="method"></param>
+    /// <param name="url"></param>
+    /// <param name="content"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    private static async Task<IFlurlResponse> ExecuteRequestAsync<T>(
+        IAsyncPolicy policy, IFlurlClient flurlClient, HttpMethod method, Url url, object? content, CancellationToken cancellationToken)
+        where T : Exception
+    {
+        try
+        {
+            return await policy
+                .ExecuteAsync(async token => await flurlClient
+                    .Request(url)
+                    .SendJsonAsync(method, content, HttpCompletionOption.ResponseContentRead, token)
+                    .ConfigureAwait(false), cancellationToken)
+                .ConfigureAwait(false);
+        }
+        catch (FlurlHttpException ex)
+        {
+            throw await HandleFlurlExceptionAsync<T>(ex);
+        }
+    }
+
     /// <summary>
     /// Executes the request and returns the parsed json http body
     /// </summary>
@@ -164,7 +232,9 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
                 .ExecuteAsync(async token => await flurlClient
                     .Request(url)
                     .SendJsonAsync(method, content, HttpCompletionOption.ResponseContentRead, token)
-                    .ReceiveJson<T>(), cancellationToken).ConfigureAwait(false);
+                    .ReceiveJson<T>()
+                    .ConfigureAwait(false), cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (FlurlHttpException ex)
         {
@@ -185,7 +255,9 @@ public class GitLabRestApiClient(IFlurlClientCache flurlClientCache, ILogger<Git
             await policy
                 .ExecuteAsync(async token => await flurlClient
                     .Request(url)
-                    .SendJsonAsync(method, content, HttpCompletionOption.ResponseContentRead, token), cancellationToken).ConfigureAwait(false);
+                    .SendJsonAsync(method, content, HttpCompletionOption.ResponseContentRead, token)
+                    .ConfigureAwait(false), cancellationToken)
+                .ConfigureAwait(false);
         }
         catch (FlurlHttpException ex)
         {

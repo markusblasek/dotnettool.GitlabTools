@@ -16,7 +16,8 @@ public class GitLabRestApiClientTests
     private const string ExpectedAccessToken = "AccessToken";
     private const int ExpectedGroupId = 4711;
     private const int ExpectedProjectId = 1147;
-    private const int ExpectedPipelineId = 1417;
+    private const int ExpectedPipelineId1 = 1417;
+    private const int ExpectedPipelineId2 = 1416;
 
     private HttpTest _httpTest = null!;
 
@@ -123,11 +124,18 @@ public class GitLabRestApiClientTests
             {
                 new()
                 {
-                    Id = ExpectedPipelineId,
+                    Id = ExpectedPipelineId1,
                     Status = PipelineStatusConstants.Success
                 }
-            })
-            .RespondWithJson(Array.Empty<Pipeline>());
+            }, (int)HttpStatusCode.OK, CreateHeaders(pageNum: 1, perPage: 1, totalPages: 2, total: 2))
+            .RespondWithJson(new Pipeline[]
+            {
+                new()
+                {
+                    Id = ExpectedPipelineId2,
+                    Status = PipelineStatusConstants.Failed
+                }
+            }, (int)HttpStatusCode.OK, CreateHeaders(pageNum: 2, perPage: 1, totalPages:2, total:2));
 
         var sut = CreateSut();
         var project = new Project
@@ -137,7 +145,7 @@ public class GitLabRestApiClientTests
         var result = await sut.ReadAllPipelinesAsync(ExpectedGitLabUrl, ExpectedAccessToken, project);
         Assert.IsNotNull(result[0]);
         Assert.IsTrue(result[0].Id.HasValue);
-        Assert.AreEqual(ExpectedPipelineId, result[0].Id);
+        Assert.AreEqual(ExpectedPipelineId1, result[0].Id);
 
         _httpTest.ShouldHaveCalled(expectedUri)
             .WithVerb(HttpMethod.Get)
@@ -156,6 +164,17 @@ public class GitLabRestApiClientTests
             .WithQueryParam(GitLabRestApiClient.QueryParamNamePage, 2);
     }
 
+    private static Dictionary<string, string> CreateHeaders(int pageNum, int perPage, int totalPages, int total)
+    {
+        return new Dictionary<string, string>
+        {
+            { "x-page", pageNum.ToString() },
+            { "x-per-page", perPage.ToString() },
+            { "x-total-pages", totalPages.ToString() },
+            { "x-total", total.ToString() }
+        };
+    }
+
     #endregion
 
     #region ReadAllPipelinesAsync
@@ -163,13 +182,13 @@ public class GitLabRestApiClientTests
     [TestMethod]
     public async Task DeletePipelinesAsync_DeletePipeline_CallExpectedMethods()
     {
-        var expectedUri = $"{ExpectedGitLabUrl}/api/v4/projects/{ExpectedProjectId}/pipelines/{ExpectedPipelineId}";
+        var expectedUri = $"{ExpectedGitLabUrl}/api/v4/projects/{ExpectedProjectId}/pipelines/{ExpectedPipelineId1}";
         _httpTest
             .RespondWithJson(new Pipeline[]
             {
                 new()
                 {
-                    Id = ExpectedPipelineId
+                    Id = ExpectedPipelineId1
                 }
             })
             .RespondWithJson(Array.Empty<Pipeline>());
@@ -182,7 +201,7 @@ public class GitLabRestApiClientTests
         var pipelines = new[]{
             new Pipeline
             {
-                Id = ExpectedPipelineId
+                Id = ExpectedPipelineId1
             }
         };
         await sut.DeletePipelinesAsync(ExpectedGitLabUrl, ExpectedAccessToken, project, pipelines);
