@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <UserSecretsId>175fb7ad-edd0-42be-ad54-94944dcfe229</UserSecretsId>
     <VersionPrefix>1.0.0</VersionPrefix>
-    <VersionSuffix>rc.0</VersionSuffix>
+    <!--<VersionSuffix>rc.0</VersionSuffix>-->
     <PackAsTool>True</PackAsTool>
     <ToolCommandName>gitlabtools</ToolCommandName>
     <Title>GitLabTools</Title>
