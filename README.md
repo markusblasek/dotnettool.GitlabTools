@@ -1,6 +1,6 @@
-[![](https://img.shields.io/nuget/v/GitLabTools.svg?style=for-the-badge)](https://www.nuget.org/packages/GitLabTools/)
-[![](https://img.shields.io/github/actions/workflow/status/markusblasek/dotnettool.gitlabtools/dotnet.yml?style=for-the-badge)](https://github.com/markusblasek/dotnettool.gitlabtools/actions/workflows/dotnet.yml)
-[![](https://img.shields.io/nuget/dt/GitLabTools.svg?style=for-the-badge)](https://www.nuget.org/packages/GitLabTools/)
+[![](https://img.shields.io/nuget/v/GitLabTools.svg)](https://www.nuget.org/packages/GitLabTools/)
+[![](https://img.shields.io/github/actions/workflow/status/markusblasek/dotnettool.gitlabtools/dotnet.yml)](https://github.com/markusblasek/dotnettool.gitlabtools/actions/workflows/dotnet.yml)
+[![](https://img.shields.io/nuget/dt/GitLabTools.svg)](https://www.nuget.org/packages/GitLabTools/)
 
 # GitLabTools
 
